@@ -1,9 +1,64 @@
 package com.example.shoppingCart.Entity;
 
-public class Apperal {
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
+@Entity
+@Table(name = "appearal")
+public class Apperal extends  Product{
 
-    private String design;
-    private String brand;
-    private String type;
 
-}
+
+
+
+
+
+        @Column(name = "type")
+        private String type;
+
+        @Column(name = "brand")
+        private String brand;
+
+        @Column(name = "design")
+        private String design;
+    public Apperal(String productId, String type, String brand,String design) {
+        super(productId);
+        this.type = type;
+        this.brand = brand;
+        this.design = design;
+    }
+
+    public Apperal() {
+        super();
+
+    }
+
+
+
+        public String getType() {
+            return type;
+        }
+
+        public void setType(String type) {
+            this.type = type;
+        }
+
+        public String getBrand() {
+            return brand;
+        }
+
+        public void setBrand(String brand) {
+            this.brand = brand;
+        }
+
+        public String getDesign() {
+            return design;
+        }
+
+        public void setDesign(String design) {
+            this.design = design;
+        }
+    }
+
+

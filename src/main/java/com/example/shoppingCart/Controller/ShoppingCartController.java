@@ -1,6 +1,8 @@
 package com.example.shoppingCart.Controller;
 
 import com.example.shoppingCart.Entity.Cart;
+import com.example.shoppingCart.Service.ShoppingCartService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -10,6 +12,8 @@ import java.util.List;
 @RestController
 @RequestMapping("/shop")
 public class ShoppingCartController {
+    @Autowired
+    ShoppingCartService shoppingCartService;
     @GetMapping("/cart/{userid}")
     public ResponseEntity<Cart> getCartDetails(@PathVariable final Integer userid) {
         System.out.println("Get cart of user: "+userid);
@@ -22,11 +26,10 @@ public class ShoppingCartController {
         return new ResponseEntity<>("product deleted from cart", HttpStatus.OK);
     }
 
-    @PostMapping("/cart/{userid}")
-    public ResponseEntity<Cart> addCartDetails(@RequestBody final Cart cart, @PathVariable final Integer userid) {
+    @PostMapping("/cart")
+    public ResponseEntity<String> addCartDetails(@RequestBody final Cart cart) {
         //call service() to add product to cart
-        System.out.println(userid);
-        System.out.println(cart);
-        return new ResponseEntity<Cart>(cart, HttpStatus.OK);
+        shoppingCartService.addProducts(cart);
+        return new ResponseEntity<>("product inserted to cart", HttpStatus.OK);
     }
 }
