@@ -20,8 +20,8 @@ public class Book extends Product{
 
     @Column(name = "publication")
     private String publication;
-    public Book(String productId, String genere, String author,String publication) {
-        super(productId);
+    public Book(Long productId, String productName,double price,String genere, String author,String publication) {
+        super(productId,productName,price);
         this.genere = genere;
         this.author = author;
         this.publication = publication;
@@ -50,6 +50,9 @@ public class Book extends Product{
     public void setPublication(String publication) {
         this.publication = publication;
     }
+
+
+
 }
 
 

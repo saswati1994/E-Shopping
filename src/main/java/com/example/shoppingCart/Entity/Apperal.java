@@ -22,8 +22,8 @@ public class Apperal extends  Product{
 
         @Column(name = "design")
         private String design;
-    public Apperal(String productId, String type, String brand,String design) {
-        super(productId);
+    public Apperal(Long productId,String productName,double price, String type, String brand,String design) {
+        super(productId,productName,price);
         this.type = type;
         this.brand = brand;
         this.design = design;
