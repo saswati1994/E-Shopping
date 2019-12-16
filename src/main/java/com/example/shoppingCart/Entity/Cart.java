@@ -57,7 +57,7 @@ public class Cart implements Serializable {
 
 
     @Column(name = "user_id")
-    private Integer userId;
+    private Long userId;
 
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
@@ -68,7 +68,7 @@ public class Cart implements Serializable {
         return cartId;
     }
 
-    public Integer getUserId() {
+    public Long getUserId() {
         return userId;
     }
 
@@ -80,7 +80,7 @@ public class Cart implements Serializable {
         this.cartId = cartId;
     }
 
-    public void setUserId(Integer userId) {
+    public void setUserId(Long userId) {
         this.userId = userId;
     }
 

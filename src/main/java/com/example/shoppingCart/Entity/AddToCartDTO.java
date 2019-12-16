@@ -3,11 +3,11 @@ package com.example.shoppingCart.Entity;
 import java.util.List;
 
 public class AddToCartDTO {
-    private Integer userId;
+    private Long userId;
 
     private List<Orders> items;
 
-    public Integer getUserId() {
+    public Long getUserId() {
         return userId;
     }
 
@@ -15,7 +15,7 @@ public class AddToCartDTO {
         return items;
     }
 
-    public void setUserId(Integer userId) {
+    public void setUserId(Long userId) {
         this.userId = userId;
     }
 
