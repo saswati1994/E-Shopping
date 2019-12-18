@@ -1,7 +1,8 @@
 package com.example.shoppingCart.Controller;
 
-import com.example.shoppingCart.Entity.Book;
-import com.example.shoppingCart.Entity.Product;
+import com.example.shoppingCart.Entity.*;
+import com.example.shoppingCart.Repository.CartRepository;
+import com.example.shoppingCart.Repository.OrderRepository;
 import com.example.shoppingCart.Repository.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,19 +17,20 @@ import java.util.List;
 public class ProductController {
     @Autowired
     ProductRepository productRepository;
-
+    @Autowired
+    CartRepository cartRepository;
     /**
      * dummy implementation to test persistence.
      */
     @PostMapping("/product")
     public void addProducts() {
 
-//    Apparel prod2 = new Apparel();
-//    prod2.setProductName("the dress");
-//    prod2.setPrice(12.34);
-//    prod2.setType("stylis");
-//    prod2.setBrand("me");
-//    prod2.setDesign("mine");
+   Apperal prod2 = new Apperal();
+   prod2.setProductName("the dress");
+    prod2.setPrice(12.34);
+   prod2.setType("stylis");
+   prod2.setBrand("me");
+ prod2.setDesign("mine");
 
 
         Book prod1 = new Book();
@@ -37,11 +39,17 @@ public class ProductController {
         prod1.setPublication("mine");
         prod1.setAuthor("me");
         productRepository.save(prod1);
+        productRepository.save(prod2);
     }
     @GetMapping("/product")
-    public List<Product> getAllProducts(){
+   /* public List<Product> getAllProducts(){
 
         return productRepository.findAll();
+
+    }*/
+    public List<Cart> getAllProducts(){
+
+        return cartRepository.findAll();
 
     }
 }

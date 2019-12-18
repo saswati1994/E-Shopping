@@ -44,21 +44,22 @@ public class ShoppingCartController {
         //if(carts.get(0).getUserId() == addToCart.getUserId())
             List<Orders> orderPayload = cart.getOrders();
             List<Orders> ordersDb = carts.get(0).getOrders();
-            if(orderPayload.size()==ordersDb.size()) {
+
                 for (Orders order1 : orderPayload) {
                     for (Orders order2 : ordersDb) {
                         if (order1.getProductId() == order2.getProductId()) {
                             Integer quantity = order2.getQuantity() + order1.getQuantity();
                             orderRepository.updateAddress(quantity,order2.getProductId());
+                        }else{
+                            Long order_Id = order1.getOrderId();
+                            Long product_Id = order1.getProductId();
+                            Integer quantity = order1.getQuantity();
+                            orderRepository.insertOrders(order_Id,product_Id,quantity);
+
                         }
                     }
                 }
-            }else{
-                //Orders ord = new Orders();
-                //ord.setQuantity();
-                //ord.setOrderId();
-                System.out.println("to do...");
-            }
+
         }else{
             try {
                 cartRepository.save(cart);
