@@ -72,6 +72,21 @@ public class ShoppingCartController {
         return new ResponseEntity(cart, HttpStatus.CREATED);
     }
 
+    @DeleteMapping("/cart")
+    public ResponseEntity deleteCartItems() {
+
+cartRepository.deleteAll();
+
+        return new ResponseEntity("all item deleted", HttpStatus.OK);
+    }
+    @DeleteMapping("/cart/id")
+    public ResponseEntity deleteCartItemsByProductId(@RequestParam final Long productId) {
+
+        orderRepository.deleteProduct(productId);
+
+        return new ResponseEntity("selected item deleted", HttpStatus.OK);
+    }
+
     @GetMapping("/cart")
     public ResponseEntity getCartItems(@RequestParam final Long cartId) {
 
