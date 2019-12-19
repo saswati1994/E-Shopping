@@ -51,9 +51,10 @@ public class ShoppingCartController {
                             Integer quantity = order2.getQuantity() + order1.getQuantity();
                             orderRepository.updateAddress(quantity,order2.getProductId());
                         }else{
-                            Long order_Id = order1.getOrderId();
+                            Long order_Id = order2.getOrderId()+1;
                             Long product_Id = order1.getProductId();
                             Integer quantity = order1.getQuantity();
+
                             orderRepository.insertOrders(order_Id,product_Id,quantity);
 
                         }
@@ -82,6 +83,7 @@ cartRepository.deleteAll();
     @DeleteMapping("/cart/id")
     public ResponseEntity deleteCartItemsByProductId(@RequestParam final Long productId) {
 
+        //orderRepository.deleteById(productId);
         orderRepository.deleteProduct(productId);
 
         return new ResponseEntity("selected item deleted", HttpStatus.OK);
