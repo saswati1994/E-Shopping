@@ -20,108 +20,109 @@ import java.util.*;
 @RequestMapping("/shop")
 public class ShoppingCartController {
 
-    @Autowired
-    CartRepository cartRepository;
-    @Autowired
-    ProductRepository productRepository;
-    @Autowired
-    OrderRepository orderRepository;
-    @PostMapping("/cart")
-    public ResponseEntity<Cart> addToCart(@RequestBody AddToCartDTO addToCart) {
+  @Autowired
+  CartRepository cartRepository;
+  @Autowired
+  ProductRepository productRepository;
+  @Autowired
+  OrderRepository orderRepository;
 
-        System.out.println("AddToCart POST Called \n" + addToCart);
+  @PostMapping("/cart")
+  public ResponseEntity<Cart> addToCart(@RequestBody AddToCartDTO addToCart) {
 
-        Cart cart = new Cart();
-        cart.setUserId(addToCart.getUserId());
-        cart.setOrders(addToCart.getItems());
+    System.out.println("AddToCart POST Called \n" + addToCart);
 
-        Cart searchCart =new Cart();
-        searchCart.setUserId(addToCart.getUserId());
-        Example<Cart> cartExamle = Example.of(searchCart);
-        List<Cart> carts = cartRepository.findAll(cartExamle);
-        if(carts.size()!=0){
 
-        //if(carts.get(0).getUserId() == addToCart.getUserId())
-            List<Orders> orderPayload = cart.getOrders();
-            List<Orders> ordersDb = carts.get(0).getOrders();
+    Cart cart = new Cart();
+    cart.setUserId(addToCart.getUserId());
+    cart.setOrders(addToCart.getItems());
 
-                for (Orders order1 : orderPayload) {
-                    for (Orders order2 : ordersDb) {
-                        if (order1.getProductId() == order2.getProductId()) {
-                            Integer quantity = order2.getQuantity() + order1.getQuantity();
-                            orderRepository.updateAddress(quantity,order2.getProductId());
-                        }else{
-                            Long order_Id = order2.getOrderId()+1;
-                            Long product_Id = order1.getProductId();
-                            Integer quantity = order1.getQuantity();
+    Cart searchCart = new Cart();
+    searchCart.setUserId(addToCart.getUserId());
+    Example<Cart> cartExamle = Example.of(searchCart);
+    List<Cart> carts = cartRepository.findAll(cartExamle);
+    if (carts.size() != 0) {
 
-                            orderRepository.insertOrders(order_Id,product_Id,quantity);
+      List<Orders> orderPayload = cart.getOrders();
+      List<Orders> ordersDb = carts.get(0).getOrders();
 
-                        }
-                    }
-                }
+      for (Orders order1 : orderPayload) {
+          Boolean doInsertNewRecord = true;
+        for (Orders order2 : ordersDb) {
 
-        }else{
-            try {
-                cartRepository.save(cart);
-            } catch (Exception e) {
+          if (order1.getProductId() == order2.getProductId()) {
+            Integer quantity = order2.getQuantity() + order1.getQuantity();
+              Long cart_id =order2.getCartId();
+            orderRepository.updateAddress(quantity, order2.getProductId(),cart_id);
+            doInsertNewRecord = false;
+          }
+
+        }
+        if(doInsertNewRecord) {
+            Orders newOrders = new Orders();
+            newOrders.setQuantity(order1.getQuantity());
+            newOrders.setProductId(order1.getProductId());
+            newOrders.setCartId(carts.get(0).getCartId());
+            try{
+                orderRepository.save(newOrders);
+            }catch (Exception e){
                 return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
             }
+
         }
+      }
 
-
-        return new ResponseEntity(cart, HttpStatus.CREATED);
+    } else {
+      try {
+        cartRepository.save(cart);
+      } catch (Exception e) {
+        return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+      }
     }
 
-    @DeleteMapping("/cart")
-    public ResponseEntity deleteCartItems() {
+    return new ResponseEntity( HttpStatus.CREATED);
+  }
 
-cartRepository.deleteAll();
+  @DeleteMapping("/cart")
+  public ResponseEntity deleteCartItems() {
 
-        return new ResponseEntity("all item deleted", HttpStatus.OK);
-    }
-    @DeleteMapping("/cart/id")
-    public ResponseEntity deleteCartItemsByProductId(@RequestParam final Long productId) {
+    cartRepository.deleteAll();
 
-        //orderRepository.deleteById(productId);
-        orderRepository.deleteProduct(productId);
+    return new ResponseEntity("all item deleted", HttpStatus.OK);
+  }
 
-        return new ResponseEntity("selected item deleted", HttpStatus.OK);
-    }
+  @DeleteMapping("/cart/id")
+  public ResponseEntity deleteCartItemsByProductId(
+      @RequestParam final Long productId) {
 
-    @GetMapping("/cart")
-    public ResponseEntity getCartItems(@RequestParam final Long cartId) {
+    //orderRepository.deleteById(productId);
+    orderRepository.deleteProduct(productId);
 
-        Optional<Cart> cart = cartRepository.findById(cartId);
-        System.out.println(cart);
-        Map resp = new HashMap<>();
+    return new ResponseEntity("selected item deleted", HttpStatus.OK);
+  }
+  @PostMapping("cart/update")
+  public ResponseEntity updateQuantity(@RequestParam final Integer quantity) {
 
-        Double totalPrice = 0.00;
+      return new ResponseEntity("quantity updated", HttpStatus.OK);
+  }
+  @GetMapping("/cart")
+  public ResponseEntity getCartItems(@RequestParam final Long userId) {
+     double totalPrice = 0.00;
+      List items = new ArrayList();
+      Long cartId = cartRepository.getCartId(userId);
+      List<Orders> orders = orderRepository.getOrder(cartId);
+      Product product =null;
+      for(Orders order:orders){
+           product = productRepository.findById(order.getProductId()).get();
+          totalPrice = totalPrice + (product.getPrice() * order.getQuantity());
+      }
+      Map productDTO = new HashMap<>();
+      productDTO.put("productDesc", product);
+      productDTO.put("TotalPrice", totalPrice);
+      items.add(productDTO);
 
-        List items = new ArrayList();
+    return new ResponseEntity(items, HttpStatus.OK);
 
-        cart.ifPresent(cart1 -> {
-
-            resp.put("cartId", cart1.getCartId());
-            resp.put("userId", cart1.getUserId());
-
-
-            cart.get().getOrders().stream()
-                    .forEach(order -> {
-                        Product product = productRepository.findById(order.getProductId()).get();
-                        Map productDTO = new HashMap<>();
-                        productDTO.put("productDesc", product);
-                        productDTO.put("quantity", order.getQuantity());
-                        items.add(productDTO);
-
-                    });
-            resp.put("products", items);
-
-
-        });
-
-        return new ResponseEntity(resp, HttpStatus.OK);
-
-    }
+  }
 
 }
