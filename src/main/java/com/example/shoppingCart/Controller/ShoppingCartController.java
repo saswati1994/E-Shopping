@@ -36,11 +36,25 @@ public class ShoppingCartController {
     Cart cart = new Cart();
     cart.setUserId(addToCart.getUserId());
     cart.setOrders(addToCart.getItems());
+      List<Orders> orders = cart.getOrders();
+      for(Orders order:orders) {
+          if (order.getQuantity() < 0) {
+              return new ResponseEntity("quantity cannot be negative", HttpStatus.BAD_REQUEST);
 
+          }
+      }
+      for(Orders order:orders) {
+          if(order.getQuantity() ==0){
+              orderRepository.deleteProduct(order.getProductId());
+              return new ResponseEntity("product deleted",HttpStatus.BAD_REQUEST);
+          }
+
+      }
     Cart searchCart = new Cart();
     searchCart.setUserId(addToCart.getUserId());
     Example<Cart> cartExamle = Example.of(searchCart);
     List<Cart> carts = cartRepository.findAll(cartExamle);
+
     if (carts.size() != 0) {
 
       List<Orders> orderPayload = cart.getOrders();
@@ -50,9 +64,11 @@ public class ShoppingCartController {
           Boolean doInsertNewRecord = true;
         for (Orders order2 : ordersDb) {
 
+
+
           if (order1.getProductId() == order2.getProductId()) {
             Integer quantity = order2.getQuantity() + order1.getQuantity();
-              Long cart_id =order2.getCartId();
+              Integer cart_id =order2.getCartId();
             orderRepository.updateAddress(quantity, order2.getProductId(),cart_id);
             doInsertNewRecord = false;
           }
@@ -109,19 +125,35 @@ public class ShoppingCartController {
   public ResponseEntity getCartItems(@RequestParam final Long userId) {
      double totalPrice = 0.00;
       List items = new ArrayList();
-      Long cartId = cartRepository.getCartId(userId);
-      List<Orders> orders = orderRepository.getOrder(cartId);
-      Product product =null;
-      for(Orders order:orders){
-           product = productRepository.findById(order.getProductId()).get();
-          totalPrice = totalPrice + (product.getPrice() * order.getQuantity());
-      }
       Map productDTO = new HashMap<>();
-      productDTO.put("productDesc", product);
-      productDTO.put("TotalPrice", totalPrice);
-      items.add(productDTO);
+      Cart cartInstance = new Cart();
+      cartInstance.setUserId(userId);
+     Example<Cart>cartExample =  Example.of(cartInstance);
+     try{
+        List<Cart> carts =  cartRepository.findAll(cartExample);
+        if(carts.size()!=0){
+            Integer cartId  = carts.get(0).getCartId();
+            List<Orders> orders = orderRepository.getOrder(cartId);
+            for(Orders order:orders){
+                Product product = productRepository.findById(order.getProductId()).get();
+                totalPrice = totalPrice + (product.getPrice() * order.getQuantity());
+                Map cartItem =  new HashMap();
+                cartItem.put("productDesc",product);
+                cartItem.put("quantity",order.getQuantity());
+                items.add(cartItem);
+            }
+            productDTO.put("items",items);
+            productDTO.put("totalPrice",totalPrice);
 
-    return new ResponseEntity(items, HttpStatus.OK);
+            return new ResponseEntity(productDTO,HttpStatus.OK);
+        }else{
+            return  new ResponseEntity(HttpStatus.NOT_FOUND);
+        }
+
+     }catch (Exception e){
+         System.out.println(e);
+         return new ResponseEntity(HttpStatus.BAD_REQUEST);
+     }
 
   }
 

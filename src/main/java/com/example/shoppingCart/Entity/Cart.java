@@ -1,16 +1,14 @@
 package com.example.shoppingCart.Entity;
 
-import org.hibernate.annotations.Type;
+
 import org.hibernate.annotations.TypeDef;
 
 import javax.persistence.*;
 import java.io.Serializable;
 import java.util.List;
-import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
 
 @Entity
 @Table(name = "Cart")
-@TypeDef(name = "jsonb",typeClass = JsonBinaryType.class)
 public class Cart implements Serializable {
 
     @Id
@@ -18,7 +16,7 @@ public class Cart implements Serializable {
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "cart_seq_generator")
     @Column(name = "cart_id", unique = true)
 
-    private Long cartId;
+    private Integer cartId;
 
 
     @Column(name = "user_id")
@@ -29,7 +27,7 @@ public class Cart implements Serializable {
     @JoinColumn(name = "cart_id")
     private List<Orders> orders;
 
-    public Long getCartId() {
+    public Integer getCartId() {
         return cartId;
     }
 
@@ -41,7 +39,7 @@ public class Cart implements Serializable {
         return orders;
     }
 
-    public void setCartId(Long cartId) {
+    public void setCartId(Integer cartId) {
         this.cartId = cartId;
     }
 

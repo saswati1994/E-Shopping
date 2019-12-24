@@ -15,7 +15,7 @@ public interface OrderRepository extends JpaRepository<Orders, Long> {
     @Transactional
     @Modifying(clearAutomatically = true)
     @Query("UPDATE Orders o SET o.quantity = :quantity WHERE o.productId = :productId and o.cartId =:cartId")
-    void updateAddress(@Param("quantity") Integer quantity, @Param("productId") Long productId,@Param("cartId") Long cartId);
+    void updateAddress(@Param("quantity") Integer quantity, @Param("productId") Long productId,@Param("cartId") Integer cartId);
     @Transactional
     @Modifying(clearAutomatically = true)
     @Query("UPDATE Orders o SET o.quantity = :quantity WHERE o.productId = :productId")
@@ -27,5 +27,5 @@ public interface OrderRepository extends JpaRepository<Orders, Long> {
     @Transactional
     @Modifying(clearAutomatically = true)
     @Query("select o from Orders o where o.cartId=:cartId")
-    public List<Orders> getOrder(@Param("cartId") Long cartId);
+    public List<Orders> getOrder(@Param("cartId") Integer cartId);
 }
