@@ -26,7 +26,8 @@ public class ShoppingCartController {
   ProductRepository productRepository;
   @Autowired
   OrderRepository orderRepository;
-
+  @Autowired
+  ShoppingCartService shoppingCartService;
   @PostMapping("/cart")
   public ResponseEntity<Cart> addToCart(@RequestBody AddToCartDTO addToCart) {
 
@@ -37,64 +38,82 @@ public class ShoppingCartController {
     cart.setUserId(addToCart.getUserId());
     cart.setOrders(addToCart.getItems());
       List<Orders> orders = cart.getOrders();
+      //shoppingCartService.validateRequest(orders);
       for(Orders order:orders) {
-          if (order.getQuantity() < 0) {
-              return new ResponseEntity("quantity cannot be negative", HttpStatus.BAD_REQUEST);
-
+          Optional<Product> productId = productRepository.findById(order.getProductId());
+          if (productId.isPresent()) {
+              return new ResponseEntity("product not present in product table",HttpStatus.NOT_FOUND);
           }
       }
-      for(Orders order:orders) {
-          if(order.getQuantity() ==0){
-              orderRepository.deleteProduct(order.getProductId());
-              return new ResponseEntity("product deleted",HttpStatus.BAD_REQUEST);
-          }
 
-      }
-    Cart searchCart = new Cart();
-    searchCart.setUserId(addToCart.getUserId());
-    Example<Cart> cartExamle = Example.of(searchCart);
-    List<Cart> carts = cartRepository.findAll(cartExamle);
+              for(Orders order:orders) {
+                  if (order.getQuantity() < 0) {
+                      return new ResponseEntity("quantity cannot be negative", HttpStatus.OK);
 
-    if (carts.size() != 0) {
-
-      List<Orders> orderPayload = cart.getOrders();
-      List<Orders> ordersDb = carts.get(0).getOrders();
-
-      for (Orders order1 : orderPayload) {
-          Boolean doInsertNewRecord = true;
-        for (Orders order2 : ordersDb) {
+                  }
+              }
 
 
 
-          if (order1.getProductId() == order2.getProductId()) {
-            Integer quantity = order2.getQuantity() + order1.getQuantity();
-              Integer cart_id =order2.getCartId();
-            orderRepository.updateAddress(quantity, order2.getProductId(),cart_id);
-            doInsertNewRecord = false;
-          }
+              Cart searchCart = new Cart();
+              searchCart.setUserId(addToCart.getUserId());
+              Example<Cart> cartExamle = Example.of(searchCart);
+              List<Cart> carts = cartRepository.findAll(cartExamle);
 
-        }
-        if(doInsertNewRecord) {
-            Orders newOrders = new Orders();
-            newOrders.setQuantity(order1.getQuantity());
-            newOrders.setProductId(order1.getProductId());
-            newOrders.setCartId(carts.get(0).getCartId());
-            try{
-                orderRepository.save(newOrders);
-            }catch (Exception e){
-                return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-            }
+              if (carts.size() != 0) {
 
-        }
-      }
+                  List<Orders> orderPayload = cart.getOrders();
+                  List<Orders> ordersDb = carts.get(0).getOrders();
 
-    } else {
-      try {
-        cartRepository.save(cart);
-      } catch (Exception e) {
-        return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-      }
-    }
+                  for (Orders order1 : orderPayload) {
+                      Boolean doInsertNewRecord = true;
+                      for (Orders order2 : ordersDb) {
+
+
+
+                          if (order1.getProductId() == order2.getProductId()) {
+                              Integer quantity = order2.getQuantity() + order1.getQuantity();
+                              Integer cart_id =order2.getCartId();
+                              orderRepository.updateAddress(quantity, order2.getProductId(),cart_id);
+                              doInsertNewRecord = false;
+                          }
+
+                      }
+                      if(doInsertNewRecord) {
+                          Orders newOrders = new Orders();
+                          newOrders.setQuantity(order1.getQuantity());
+                          newOrders.setProductId(order1.getProductId());
+                          newOrders.setCartId(carts.get(0).getCartId());
+                          try{
+                              orderRepository.save(newOrders);
+                          }catch (Exception e){
+                              return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+                          }
+
+                      }
+                  }
+
+              } else {
+                  try {
+                      cartRepository.save(cart);
+                  } catch (Exception e) {
+                      return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+                  }
+              }
+              for(Orders order:orders) {
+                  if(order.getQuantity() ==0){
+                      try {
+                          System.out.println("");
+                          orderRepository.deleteProduct(order.getProductId());
+                          //return new ResponseEntity("product deleted",HttpStatus.BAD_REQUEST);
+                      }catch (Exception e){
+                          e.printStackTrace();
+                      }
+                  }
+
+              }
+
+
 
     return new ResponseEntity( HttpStatus.CREATED);
   }
